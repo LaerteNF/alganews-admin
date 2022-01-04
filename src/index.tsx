@@ -1,14 +1,34 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom";
+import { BrowserRouter } from "react-router-dom";
+import { Provider } from "react-redux";
+import { ConfigProvider } from "antd";
+import ptBR from "antd/lib/locale/pt_BR";
+import moment from "moment";
+import "moment/locale/pt-br";
+
+import reportWebVitals from "./reportWebVitals";
+import { store } from "./core/store";
+import DefaultLayout from "./app/layouts/Default";
+import Routes from "./app/routes";
+
+import "./index.less";
+
+moment.locale("pt-br");
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <ConfigProvider locale={ptBR}>
+      <Provider store={store}>
+        <BrowserRouter>
+          <DefaultLayout>
+            <Routes />
+          </DefaultLayout>
+        </BrowserRouter>
+      </Provider>
+    </ConfigProvider>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
 
 // If you want to start measuring performance in your app, pass a function
