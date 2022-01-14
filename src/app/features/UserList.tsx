@@ -11,18 +11,27 @@ import {
 } from "antd";
 import format from "date-fns/format";
 import { User } from "laerte_fernandes-sdk";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useUsers from "../../core/hooks/useUsers";
 import { EyeOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 import { ColumnProps } from "antd/lib/table";
 import { Link } from "react-router-dom";
 import { Tooltip } from "antd";
+import Forbidden from "../components/Forbidden";
 
 export default function UserList() {
   const { users, fetchUsers, toggleUserStatus, fetching } = useUsers();
 
+  const [forbidden, setForbidden] = useState(false);
+
   useEffect(() => {
-    fetchUsers();
+    fetchUsers().catch((err) => {
+      if (err?.data?.status === 403) {
+        setForbidden(true);
+        return;
+      }
+      throw err;
+    });
   }, [fetchUsers]);
 
   const getColumnSearchProps = (
@@ -75,6 +84,10 @@ export default function UserList() {
         : "",
   });
 
+  if (forbidden) {
+    return <Forbidden />;
+  }
+
   return (
     <>
       <Table<User.Summary>
@@ -108,8 +121,16 @@ export default function UserList() {
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item label={"Ações"}>
-                    <Button size="small" icon={<EyeOutlined />} />
-                    <Button size="small" icon={<EditOutlined />} />
+                    <Tooltip title="Visualizar usuário">
+                      <Link to={`/usuarios/${user.id}`}>
+                        <Button size="small" icon={<EyeOutlined />} />
+                      </Link>
+                    </Tooltip>
+                    <Tooltip title="Editar usuário">
+                      <Link to={`/usuarios/edicao/${user.id}`}>
+                        <Button size="small" icon={<EditOutlined />} />
+                      </Link>
+                    </Tooltip>
                   </Descriptions.Item>
                 </Descriptions>
               );
@@ -184,6 +205,10 @@ export default function UserList() {
             render(active: boolean, user) {
               return (
                 <Switch
+                  disabled={
+                    (active && !user.canBeDeactivated) ||
+                    (!active && !user.canBeActivated)
+                  }
                   onChange={() => {
                     toggleUserStatus(user);
                   }}

@@ -16,10 +16,14 @@
     "antd": "^4.16.13",
     "antd-img-crop": "^3.16.0",
     "antd-mask-input": "^0.1.15",
+    "axios": "^0.24.0",
     "craco-less": "^1.20.0",
     "date-fns": "^2.25.0",
-    "laerte_fernandes-sdk": "^2.4.1",
+    "jwt-decode": "^3.1.2",
+    "laerte_fernandes-sdk": "^3.0.0",
     "lodash.debounce": "^4.0.8",
+    "pkce-challenge": "^2.2.0",
+    "qs": "^6.10.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.5",
@@ -55,6 +59,7 @@
   },
   "devDependencies": {
     "@types/lodash.debounce": "^4.0.6",
+    "@types/qs": "^6.9.7",
     "@types/react-router-dom": "^5.3.2"
   }
 }

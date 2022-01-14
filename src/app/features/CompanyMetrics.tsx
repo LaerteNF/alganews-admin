@@ -1,9 +1,13 @@
 import { Area, AreaConfig } from "@ant-design/charts";
+import { Card, Space, Typography } from "antd";
+import { LockFilled } from "@ant-design/icons";
 import { format } from "date-fns";
 import ptBR from "date-fns/esm/locale/pt-BR";
 import { MetricService } from "laerte_fernandes-sdk";
+import { ForbiddenError } from "laerte_fernandes-sdk/dist/errors";
 import { useEffect, useState } from "react";
 import transformDataIntoAntdChart from "../../core/utils/TransformDataIntoAntdChart";
+import Forbidden from "../components/Forbidden";
 
 export default function CompanyMetrics() {
   const [data, setData] = useState<
@@ -14,11 +18,23 @@ export default function CompanyMetrics() {
     }[]
   >([]);
 
+  const [forbidden, setForbidden] = useState(false);
+
   useEffect(() => {
     MetricService.getMonthlyRevenuesExpenses()
       .then(transformDataIntoAntdChart)
-      .then(setData);
+      .then(setData)
+      .catch((err) => {
+        if (err instanceof ForbiddenError) {
+          setForbidden(true);
+          return;
+        }
+
+        throw err;
+      });
   }, []);
+
+  if (forbidden) return <Forbidden minHeight={256} />;
 
   const config: AreaConfig = {
     data,

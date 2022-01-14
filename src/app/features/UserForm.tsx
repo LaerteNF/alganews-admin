@@ -21,6 +21,7 @@ import MaskedInput from "antd-mask-input";
 import { Moment } from "moment";
 import { useHistory } from "react-router";
 import CurrencyInput from "../components/CurrencyInput";
+import useAuth from "../../core/hooks/useAuth";
 
 const { TabPane } = Tabs;
 
@@ -45,6 +46,8 @@ export default function UserForm(props: userFormProps) {
   const [activeTab, setActiveTab] = useState<"personal" | "bankAccount">(
     "personal"
   );
+
+  const { user: authenticatedUser } = useAuth();
 
   const [isEditorRole, setIsEditorRole] = useState(
     props.user?.role === "EDITOR"
@@ -252,10 +255,16 @@ export default function UserForm(props: userFormProps) {
                 setIsEditorRole(value === "EDITOR");
               }}
               placeholder={"Selecione um perfil"}
+              disabled={props.user && !props.user?.canSensitiveDataBeUpdated}
             >
               <Select.Option value={"EDITOR"}>Editor</Select.Option>
               <Select.Option value={"ASSISTANT"}>Assistente</Select.Option>
-              <Select.Option value={"MANAGER"}>Gerente</Select.Option>
+              <Select.Option
+                disabled={authenticatedUser?.role !== "MANAGER"}
+                value={"MANAGER"}
+              >
+                Gerente
+              </Select.Option>
             </Select>
           </Form.Item>
         </Col>
@@ -271,7 +280,11 @@ export default function UserForm(props: userFormProps) {
               },
             ]}
           >
-            <Input type="email" placeholder={"E.g.: contato@joao.silva"} />
+            <Input
+              type="email"
+              disabled={props.user && !props.user?.canSensitiveDataBeUpdated}
+              placeholder={"E.g.: contato@joao.silva"}
+            />
           </Form.Item>
         </Col>
         <Col sm={24}>
@@ -345,6 +358,9 @@ export default function UserForm(props: userFormProps) {
                     <MaskedInput
                       mask="(11) 11111-1111"
                       placeholder={"(27) 99999-9999"}
+                      disabled={
+                        props.user && !props.user?.canSensitiveDataBeUpdated
+                      }
                     />
                   </Form.Item>
                 </Col>

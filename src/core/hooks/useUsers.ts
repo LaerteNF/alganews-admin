@@ -1,24 +1,20 @@
 import { User } from "laerte_fernandes-sdk";
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../store";
+import { AppDispatch, RootState } from "../store";
 import * as UserActions from "../store/User.reducer";
 
 export default function useUsers() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const users = useSelector((state: RootState) => state.user.list);
-
   const editors = useSelector((state: RootState) =>
-    state.user.list.filter((user) => {
-      return user.role === "EDITOR";
-    })
+    state.user.list.filter((user) => user.role === "EDITOR")
   );
-
   const fetching = useSelector((state: RootState) => state.user.fetching);
 
   const fetchUsers = useCallback(() => {
-    dispatch(UserActions.getAllUsers());
+    return dispatch(UserActions.getAllUsers()).unwrap();
   }, [dispatch]);
 
   const toggleUserStatus = useCallback(

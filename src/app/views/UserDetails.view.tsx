@@ -26,15 +26,19 @@ import usePosts from "../../core/hooks/usePosts";
 import moment from "moment";
 import usePageTitle from "../../core/hooks/usePageTitle";
 import formatPhone from "../../core/utils/formatPhone";
+import useBreadcrumb from "../../core/hooks/useBreadcrumb";
 
 export default function UserDetailsView() {
   usePageTitle("Detalhes do usuário");
+
   const params = useParams<{ id: string }>();
   const [page, setPage] = useState(0);
 
   const { lg } = useBreakpoint();
 
   const { user, fetchUser, notFound, toggleUserStatus } = useUser();
+
+  useBreadcrumb(`Usuários/${user?.name || "Detalhes"}`);
 
   const {
     fetchUserPosts,
@@ -107,7 +111,13 @@ export default function UserDetailsView() {
                 });
               }}
             >
-              <Button type={"primary"}>
+              <Button
+                disabled={
+                  (user.active && !user.canBeDeactivated) ||
+                  (!user.active && !user.canBeActivated)
+                }
+                type={"primary"}
+              >
                 {user.active ? "Desabilitar" : "Habilitar"}
               </Button>
             </Popconfirm>

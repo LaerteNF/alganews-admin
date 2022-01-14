@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Key } from "antd/lib/table/interface";
 import { CashFlow, CashFlowService } from "laerte_fernandes-sdk";
-import CustomError from "laerte_fernandes-sdk/dist/CustomError";
 import moment from "moment";
 import { RootState } from ".";
 import getThunkStatus from "../utils/getThunkStatus";
@@ -26,10 +25,14 @@ const initialState: RevenueState = {
 
 export const getRevenues = createAsyncThunk(
   "cash-flow/revenues/getRevenues",
-  async (_, { getState, dispatch }) => {
-    const { query } = (getState() as RootState).cashFlow.revenue;
-    const revenues = await CashFlowService.getAllEntries(query);
-    await dispatch(storeList(revenues));
+  async (_, { getState, dispatch, rejectWithValue }) => {
+    try {
+      const { query } = (getState() as RootState).cashFlow.revenue;
+      const revenues = await CashFlowService.getAllEntries(query);
+      await dispatch(storeList(revenues));
+    } catch (err) {
+      return rejectWithValue({ ...(err as object) });
+    }
   }
 );
 
@@ -40,8 +43,7 @@ export const createRevenue = createAsyncThunk(
       await CashFlowService.insertNewEntry(revenue);
       await dispatch(getRevenues());
     } catch (err) {
-      const error = err as CustomError;
-      return rejectWithValue({ ...error });
+      return rejectWithValue({ ...(err as object) });
     }
   }
 );
@@ -56,8 +58,7 @@ export const updateRevenue = createAsyncThunk(
       await CashFlowService.updateExistingEntry(entryId, entry);
       await dispatch(getRevenues());
     } catch (err) {
-      const error = err as CustomError;
-      return rejectWithValue({ ...error });
+      return rejectWithValue({ ...(err as object) });
     }
   }
 );
@@ -69,8 +70,7 @@ export const removeRevenue = createAsyncThunk(
       await CashFlowService.removeExistingEntry(revenueId);
       await dispatch(getRevenues());
     } catch (err) {
-      const error = err as CustomError;
-      return rejectWithValue({ ...error });
+      return rejectWithValue({ ...(err as object) });
     }
   }
 );

@@ -10,6 +10,8 @@ import UserReducer from "./User.reducer";
 import expenseReducer from "./Expense.slice";
 import revenueReducer from "./Revenue.slice";
 import entriesCategoryReducer from "./EntriesCategory.slice";
+import authReducer from "./Auth.slice";
+import uiReducer from "./UI.slice";
 
 const observeActions: Middleware = () => (next) => (action) => {
   if (isRejected(action)) {
@@ -18,13 +20,24 @@ const observeActions: Middleware = () => (next) => (action) => {
       "cash-flow/categories/deleteCategory/rejected",
       "cash-flow/expenses/createExpense/rejected",
       "cash-flow/revenues/createRevenue/rejected",
+      "cash-flow/expenses/getExpenses/rejected",
+      "cash-flow/revenues/getRevenues/rejected",
+      "cash-flow/categories/getCategories/rejected",
+      "user/getAllUsers/rejected",
+      "payment/getAllPayments/rejected",
     ];
+
+    console.log("action: " + action.type);
 
     const shouldNotify = !ignoredActions.includes(action.type);
 
+    const message = action.meta.rejectedWithValue
+      ? action.payload.message
+      : action.error.message;
+
     if (shouldNotify) {
       notification.error({
-        message: action.error.message,
+        message: message,
       });
     }
   }
@@ -43,6 +56,8 @@ export const store = configureStore({
     user: UserReducer,
     payment: PaymentReducer,
     cashFlow: cashFlowReducer,
+    auth: authReducer,
+    ui: uiReducer,
   },
   middleware: function (getDefaultMiddlewares) {
     return getDefaultMiddlewares().concat(observeActions);

@@ -17,8 +17,19 @@ const initialState: UserState = {
   list: [],
 };
 
-export const getAllUsers = createAsyncThunk("user/getAllUsers", async () =>
-  UserService.getAllUsers()
+//export const getAllUsers = createAsyncThunk("user/getAllUsers", async () =>
+//  UserService.getAllUsers()
+//);
+
+export const getAllUsers = createAsyncThunk(
+  "user/getAllUsers",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await UserService.getAllUsers();
+    } catch (err) {
+      return rejectWithValue({ ...(err as object) });
+    }
+  }
 );
 
 export const toggleUserStatus = createAsyncThunk(
@@ -39,7 +50,7 @@ export default createReducer(initialState, (builder) => {
 
   builder
     .addCase(getAllUsers.fulfilled, (state, action) => {
-      state.list = action.payload;
+      state.list = action.payload as User.Summary[];
     })
     .addMatcher(success, (state) => {
       state.fetching = false;

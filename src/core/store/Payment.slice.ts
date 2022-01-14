@@ -36,13 +36,17 @@ const initialState: PaymentState = {
 
 export const getAllPayments = createAsyncThunk(
   "payment/getAllPayments",
-  async (_, { getState, dispatch }) => {
-    // pega o reducer do Rootstate geral na memória e pega o atributo query dele
-    const {
-      payment: { query },
-    } = getState() as RootState;
-    const paymentPaginated = await PaymentService.getAllPayments(query);
-    await dispatch(storeList(paymentPaginated));
+  async (_, { getState, dispatch, rejectWithValue }) => {
+    try {
+      // pega o reducer do Rootstate geral na memória e pega o atributo query dele
+      const {
+        payment: { query },
+      } = getState() as RootState;
+      const paymentPaginated = await PaymentService.getAllPayments(query);
+      await dispatch(storeList(paymentPaginated));
+    } catch (err) {
+      return rejectWithValue({ ...(err as object) });
+    }
   }
 );
 

@@ -3,6 +3,7 @@ import { User, UserService } from "laerte_fernandes-sdk";
 import moment from "moment";
 import { useCallback, useEffect } from "react";
 import { Redirect, useHistory, useParams } from "react-router";
+import useBreadcrumb from "../../core/hooks/useBreadcrumb";
 import usePageTitle from "../../core/hooks/usePageTitle";
 import useUser from "../../core/hooks/useUser";
 import NotFoundError from "../components/NotFoundError";
@@ -10,6 +11,7 @@ import UserForm from "../features/UserForm";
 
 export default function UserEditView() {
   usePageTitle("Edição do usuário");
+  useBreadcrumb("Usuários/Edição");
   const params = useParams<{ id: string }>();
   const history = useHistory();
   const { user, fetchUser, notFound } = useUser();

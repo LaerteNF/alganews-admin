@@ -11,12 +11,13 @@ import {
 import { CashFlow } from "laerte_fernandes-sdk";
 import moment from "moment";
 import { DeleteOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useCashFlow from "../../core/hooks/useCashFlow";
 import transformIntoBrl from "../../core/utils/transformIntoBrl";
 import DoubleConfirm from "../components/DoubleConfirm";
 import { useHistory, useLocation } from "react-router-dom";
 import { useRef } from "react";
+import Forbidden from "../components/Forbidden";
 
 interface EntriesListProps {
   onEdit: (entryId: number) => any;
@@ -38,10 +39,18 @@ export default function EntriesList(props: EntriesListProps) {
     removeEntry,
   } = useCashFlow(type);
 
+  const [forbidden, setForbidden] = useState(false);
+
   const didMount = useRef(false);
 
   useEffect(() => {
-    fetchEntries();
+    fetchEntries().catch((err) => {
+      if (err?.data?.status === 403) {
+        setForbidden(true);
+        return;
+      }
+      throw err;
+    });
   }, [fetchEntries]);
 
   useEffect(() => {
@@ -54,6 +63,8 @@ export default function EntriesList(props: EntriesListProps) {
       didMount.current = true;
     }
   }, [location.search, setQuery]);
+
+  if (forbidden) return <Forbidden />;
 
   return (
     <Table<CashFlow.EntrySummary>
@@ -224,6 +235,7 @@ export default function EntriesList(props: EntriesListProps) {
                     type={"text"}
                     size={"small"}
                     icon={<DeleteOutlined />}
+                    disabled={!record.canBeDeleted}
                     danger
                   />
                 </DoubleConfirm>
@@ -231,6 +243,7 @@ export default function EntriesList(props: EntriesListProps) {
                   type={"text"}
                   size={"small"}
                   icon={<EditOutlined />}
+                  disabled={!record.canBeEdited}
                   onClick={() => props.onEdit(id)}
                 />
                 <Button

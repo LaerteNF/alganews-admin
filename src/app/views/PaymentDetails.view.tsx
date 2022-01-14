@@ -10,9 +10,11 @@ import PaymentHeader from "../features/PaymentHeader";
 import PaymentPosts from "../features/PaymentPosts";
 import { PrinterOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import DoubleConfirm from "../components/DoubleConfirm";
+import useBreadcrumb from "../../core/hooks/useBreadcrumb";
 
 export default function PaymentDetailsView() {
   usePageTitle("Detalhes do pagamento");
+  useBreadcrumb("Pagamento/Detalhes");
   const params = useParams<{ id: string }>();
   const history = useHistory();
 
@@ -68,7 +70,7 @@ export default function PaymentDetailsView() {
           <DoubleConfirm
             popConfirmTitle={"Deseja aprovar este agendamento?"}
             modalTitle={"Ação irreversível"}
-            disabled={!payment}
+            disabled={!payment || !payment.canBeApproved}
             modalContent={
               "Aprovar um agendamento de pagamento gera uma despesa que não pode ser removida do fluxo de caixa. Essa ação não poderá ser desfeita."
             }
@@ -85,7 +87,7 @@ export default function PaymentDetailsView() {
             <Button
               className="no-print"
               loading={approvingPayment}
-              disabled={!payment}
+              disabled={!payment || !payment.canBeApproved}
               icon={<CheckCircleOutlined />}
               type={"primary"}
               danger

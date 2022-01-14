@@ -1,4 +1,4 @@
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, useHistory, useLocation } from "react-router-dom";
 
 import HomeView from "./views/Home.view";
 import UserCreateView from "./views/UserCreate.view";
@@ -8,13 +8,23 @@ import PaymentListView from "./views/PaymentList.view";
 import PaymentCreateView from "./views/PaymentCreate.view";
 import CashFlowRevenuesView from "./views/CashFlowRevenues.view";
 import CashFlowExpensesView from "./views/CashFlowExpenses.view";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import CustomError from "laerte_fernandes-sdk/dist/CustomError";
 import { message, notification } from "antd";
 import UserDetailsView from "./views/UserDetails.view";
 import PaymentDetailsView from "./views/PaymentDetails.view";
+import AuthService from "../auth/Authorization.service";
+import jwtDecode from "jwt-decode";
+import { Authentication } from "../auth/Auth";
+import useAuth from "../core/hooks/useAuth";
+import GlobalLoading from "./components/GlobalLoading";
 
 export default function Routes() {
+  const history = useHistory();
+  const location = useLocation();
+
+  const { fetchUser, user } = useAuth();
+
   useEffect(() => {
     window.onunhandledrejection = ({ reason }) => {
       if (reason instanceof CustomError) {
@@ -46,6 +56,70 @@ export default function Routes() {
       window.onunhandledrejection = null;
     };
   }, []);
+
+  useEffect(() => {
+    async function identify() {
+      const isInAuthorizationRoute = window.location.pathname === "/authorize";
+      const code = new URLSearchParams(window.location.search).get("code");
+      const codeVerifier = AuthService.getCodeVerifier();
+      const accessToken = AuthService.getAccessToken();
+
+      console.log(codeVerifier);
+
+      if (!accessToken && !isInAuthorizationRoute) {
+        AuthService.imperativelySendToLoginScreen();
+      }
+
+      if (isInAuthorizationRoute) {
+        if (!code) {
+          notification.error({
+            message: "Código não informado",
+          });
+          AuthService.imperativelySendToLoginScreen();
+          return;
+        }
+
+        if (!codeVerifier) {
+          AuthService.imperativelySendToLogout();
+          return;
+        }
+
+        //busca o primeiro token de acesso
+        const { access_token, refresh_token } =
+          await AuthService.getFirstAccessTokens({
+            code,
+            codeVerifier,
+            redirectUri: "http://localhost:3000/authorize",
+          });
+
+        AuthService.setAccessToken(access_token);
+        AuthService.setRefreshToken(refresh_token);
+
+        const decodedToken: Authentication.AccessTokenDecodedBody =
+          jwtDecode(access_token);
+        fetchUser(decodedToken["alganews:user_id"]);
+
+        history.push("/");
+      }
+
+      if (accessToken) {
+        const decodedToken: Authentication.AccessTokenDecodedBody =
+          jwtDecode(accessToken);
+        fetchUser(decodedToken["alganews:user_id"]);
+      }
+    }
+
+    identify();
+  }, [history, fetchUser]);
+
+  const isAuthorizationRoute = useMemo(
+    () => location.pathname === "/authorize",
+    [location.pathname]
+  );
+
+  // estou logando ou o usuário ainda não está carregado
+  if (isAuthorizationRoute || !user) return <GlobalLoading />;
+
   return (
     <Switch>
       <Route path={"/"} exact component={HomeView} />
