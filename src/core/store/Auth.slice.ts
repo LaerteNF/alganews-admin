@@ -19,11 +19,13 @@ export const fetchUser = createAsyncThunk(
   async (userId: number, { rejectWithValue, dispatch }) => {
     try {
       const user = await UserService.getDetailedUser(userId);
+      /*
       if (user.role !== "EDITOR") {
         window.alert("Você não tem acesso a este sistema");
         AuthService.imperativelySendToLogout();
         return;
       }
+      */
       dispatch(storeUser(user));
     } catch (err) {
       return rejectWithValue({ ...(err as object) });
