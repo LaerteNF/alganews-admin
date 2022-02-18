@@ -64,13 +64,18 @@ export default function PaymentForm() {
 
   const getPaymentPreview = useCallback(async () => {
     const { accountingPeriod, bonuses, payee } = form.getFieldsValue();
+
+    const FILTERED_BONUSES = bonuses?.filter(
+      (bonus) => !!bonus.title && !!bonus.amount
+    );
+
     if (payee && accountingPeriod) {
       if (payee.id && accountingPeriod.endsOn && accountingPeriod.startsOn) {
         try {
           await fetchPaymentPreview({
             payee,
             accountingPeriod,
-            bonuses: bonuses || [],
+            bonuses: FILTERED_BONUSES || [],
           });
           clearPaymentPreviewError();
         } catch (error) {
